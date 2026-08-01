@@ -1,0 +1,32 @@
+/* Design tokens + base — the C1 "financial intelligence" palette and typography.
+   Readability-first: near-black ink on light warm paper, muted oxblood accent. */
+:root {
+  --paper: #fcf5ee;
+  --paper-2: #f4ebdd;
+  --ink: #221d18;
+  --ink-2: #4a423a;
+  --ink-3: #8a7d6b;
+  --claret: #8a2a40;
+  --claret-2: #6f2033;
+  --teal: #0d6b6b;
+  --rule: #cdb595;
+  --rule-2: #b89b74;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, Consolas, monospace;
+  --osf: "onum" 1, "liga" 1, "kern" 1;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.55;
+  font-feature-settings: var(--osf);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1440px; margin: 0 auto; padding: 0 40px 90px; }
+a { color: inherit; }
+.mono { font-family: var(--mono); font-feature-settings: "tnum" 1; }

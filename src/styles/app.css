@@ -1,0 +1,137 @@
+/* Component styles, ported 1:1 from the C1 prototype. Grouped by page section. */
+
+/* ---- masthead ---- */
+.top { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-3); padding: 14px 0 10px; }
+.masthead { position: relative; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 16px 0 13px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.masthead .eyebrow { font-family: var(--serif); font-variant: small-caps; font-size: 15px; letter-spacing: 3px; color: var(--ink-2); margin-bottom: 1px; }
+.masthead h1 { font-size: 54px; font-weight: 800; letter-spacing: -1.4px; margin: 0; line-height: .92; cursor: pointer; }
+.masthead h1:hover { color: var(--claret); }
+.masthead .strap { font-family: var(--mono); font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-2); margin-top: 9px; }
+.masthead .mast-since { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; padding-bottom: 7px; }
+/* back / new-search control sits ON the masthead line (right side, vertically centred on "Fine Print") */
+.mast-back { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; background: var(--ink); color: var(--paper); border: none; padding: 11px 20px; cursor: pointer; }
+.mast-back:hover { background: var(--claret); }
+
+/* ---- mode + search bar ---- */
+.deck { display: flex; align-items: stretch; border: 1.5px solid var(--ink); background: #fffdf7; }
+.deck .modes { display: flex; }
+.modetab { font-family: var(--mono); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; background: var(--paper-2); border: none; border-right: 1px solid var(--rule-2); padding: 0 20px; cursor: pointer; color: var(--ink-2); transition: background .12s, color .12s; }
+.modetab:hover { background: #fff; color: var(--ink); }
+.modetab[aria-selected="true"] { background: var(--claret); color: #fff; }
+.deck form { flex: 1; display: flex; align-items: center; gap: 11px; padding: 0 0 0 16px; }
+.deck .mag { flex: none; color: var(--claret); display: flex; }
+.deck .qfield { flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding-right: 8px; }
+.chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11.5px; background: var(--paper-2); border: 1px solid var(--claret); color: var(--claret); padding: 5px 10px; }
+.chip b { font-weight: 400; }
+.chip button { background: none; border: none; color: var(--claret); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
+.deck input { flex: 1; min-width: 170px; border: none; outline: none; background: transparent; font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); padding: 15px 0; }
+.deck input::placeholder { color: var(--ink-3); }
+.deck .submit { font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; background: var(--ink); color: var(--paper); border: none; padding: 0 24px; cursor: pointer; align-self: stretch; transition: background .12s; }
+.deck .submit:hover { background: var(--claret); }
+.deck .submit:disabled { opacity: .55; cursor: default; }
+.note { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); padding: 11px 2px 0; }
+.note b { color: var(--teal); font-weight: 400; }
+
+/* ---- home leader + year chart ---- */
+.leader { display: grid; grid-template-columns: 1.5fr 1fr; gap: 44px; padding: 32px 0; border-bottom: 3px double var(--ink); }
+.leader h2 { font-size: 38px; font-weight: 800; line-height: 1.08; margin: 0 0 12px; letter-spacing: -.6px; text-wrap: balance; }
+.leader h2 .drop { color: var(--claret); }
+.leader p { margin: 0; color: var(--ink-2); font-size: 17px; max-width: 46ch; }
+.leader .aside { border-left: 1px solid var(--rule-2); padding-left: 24px; }
+.leader .aside h3 { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px; }
+.chart { position: relative; max-width: 420px; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .pt { cursor: pointer; }
+.charttip { position: absolute; transform: translate(-50%, -150%); background: var(--ink); color: var(--paper); font-family: var(--mono); font-size: 11px; letter-spacing: .3px; padding: 4px 9px; white-space: nowrap; pointer-events: none; z-index: 5; }
+.chartcap { font-family: var(--mono); font-size: 10.5px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-3); margin-top: 12px; }
+
+/* ---- results: filters + ledger table ---- */
+.resbar { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+.resbar h2 { font-size: 20px; font-weight: 800; margin: 0; }
+.resbar .c { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.grid { display: grid; grid-template-columns: 176px 1fr; gap: 26px; margin-top: 4px; }
+.filters { padding-top: 18px; }
+.filters h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3); margin: 18px 0 9px; }
+.filters h4:first-child { margin-top: 0; }
+.fchip { display: inline-block; font-size: 13px; padding: 2px 8px; margin: 0 4px 6px 0; border: 1px solid var(--rule-2); cursor: pointer; color: var(--ink-2); }
+.fchip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.filters input[type=range] { width: 100%; accent-color: var(--claret); margin-top: 4px; }
+.rangeval { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+
+table.ledger { width: 100%; border-collapse: collapse; margin-top: 8px; }
+table.ledger th { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-3); text-align: left; padding: 10px 10px 8px; border-bottom: 1px solid var(--ink); }
+table.ledger th.num { text-align: right; }
+table.ledger tr.entry { cursor: pointer; border-bottom: 1px solid var(--rule); }
+table.ledger tr.entry:hover { background: var(--paper-2); }
+table.ledger td { padding: 12px 10px; vertical-align: baseline; }
+table.ledger td.title { font-size: 16px; font-weight: 600; line-height: 1.25; max-width: 60ch; }
+table.ledger td.title .tsum { font-weight: 400; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); margin: 5px 0 3px; }
+table.ledger td.title small { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); font-weight: 400; letter-spacing: .5px; margin-top: 3px; }
+table.ledger td.cat { font-family: var(--mono); font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--teal); white-space: nowrap; }
+table.ledger td.date { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+.sigcell { text-align: right; white-space: nowrap; }
+.sigcell .n { font-family: var(--mono); font-size: 15px; font-weight: 700; font-feature-settings: "tnum" 1; }
+.sigbar { display: inline-block; width: 54px; height: 5px; background: var(--rule-2); margin-left: 8px; vertical-align: middle; position: relative; }
+.sigbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--claret); }
+.sigbar.mid i { background: var(--teal); }
+.sigbar.lo i { background: var(--ink-3); }
+
+/* ---- detail article ---- */
+.article { max-width: none; margin: 0; }
+.article .kick { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--claret); }
+.article h2 { font-size: 33px; font-weight: 800; line-height: 1.12; letter-spacing: -.5px; margin: 12px 0 10px; text-wrap: balance; }
+/* one strong rule under the whole header block — the single divider between header and article */
+.article .byline { font-family: var(--mono); font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--ink-2); border-bottom: 1.5px solid var(--ink); padding: 0 0 13px; margin-bottom: 28px; display: flex; gap: 22px; flex-wrap: wrap; }
+.article .lead { font-size: 20px; line-height: 1.65; color: var(--ink); margin: 0 0 30px; }
+.article .parties-line { font-size: 15px; color: var(--ink-2); margin: 0 0 34px; }
+.article .parties-line .lbl { font-family: var(--mono); font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-3); margin-right: 12px; }
+.article .orig-head { font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--claret); margin: 0 0 14px; }
+.article .body { font-size: 16.5px; line-height: 1.8; color: var(--ink); white-space: pre-wrap; }
+.acts { display: flex; flex-wrap: nowrap; gap: 10px; margin-top: 32px; }
+.acts a { font-family: var(--mono); font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; padding: 12px 20px; cursor: pointer; text-decoration: none; border: 1px solid var(--ink); color: var(--ink); }
+.acts a.solid { background: var(--claret); color: #fff; border-color: var(--claret); }
+.acts a:hover { background: var(--paper-2); }
+.acts a.solid:hover { background: var(--claret-2); }
+
+/* ---- ask the desk: staged narration + briefing ---- */
+.steps { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); border-left: 2px solid var(--claret); padding: 4px 0 4px 16px; margin: 18px 0; }
+.steps div { padding: 4px 0; opacity: 0; animation: fade .4s forwards; }
+@keyframes fade { to { opacity: 1; } }
+.steps .pending::after { content: " ▏"; animation: blink 1s step-start infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.brief { border-top: 3px double var(--ink); padding-top: 22px; }
+.brief .stamp { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: var(--claret); padding: 4px 12px; }
+.brief h2 { font-size: 29px; font-weight: 800; line-height: 1.12; margin: 14px 0; letter-spacing: -.5px; max-width: 24ch; text-wrap: balance; }
+.brief .cols { columns: 2; column-gap: 34px; column-rule: 1px solid var(--rule); }
+.brief p { font-size: 15.5px; line-height: 1.65; margin: 0 0 13px; break-inside: avoid; }
+.foots { margin-top: 22px; }
+.foots h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--ink); padding-bottom: 6px; margin-bottom: 4px; }
+.fsrc { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--rule); cursor: pointer; font-size: 14px; align-items: baseline; }
+.fsrc:hover { color: var(--claret); }
+.fsrc .n { font-family: var(--mono); color: var(--claret); font-size: 12px; }
+.fsrc .d { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+
+/* ---- footer ---- */
+.colophon { text-align: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-3); margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule); }
+
+/* ---- shared states: loading / error (kept in the same quiet language) ---- */
+.state { font-family: var(--mono); font-size: 13px; color: var(--ink-3); padding: 40px 0; }
+.state.err { color: var(--claret); }
+
+/* ---- zero results: a stated finding, so it gets article weight, not the muted mono of a failure ---- */
+.nores { padding: 40px 0 8px; max-width: 56ch; }
+.nores h3 { font-size: 28px; font-weight: 800; letter-spacing: -.4px; margin: 0 0 14px; }
+.nores-lead { font-size: 18px; line-height: 1.6; color: var(--ink); margin: 0 0 18px; }
+.nores-lead q { color: var(--claret); }
+.nores-scope { font-size: 14.5px; line-height: 1.65; color: var(--ink-2); margin: 0 0 12px; }
+.nores-clear { font-family: var(--mono); font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; background: none; border: 1px solid var(--ink); color: var(--ink); padding: 11px 20px; cursor: pointer; margin-top: 4px; }
+.nores-clear:hover { background: var(--paper-2); }
+
+@media (max-width: 720px) {
+  .leader, .grid { grid-template-columns: 1fr; }
+  .brief .cols { columns: 1; }
+  .masthead { flex-wrap: wrap; }
+  .masthead h1 { font-size: 44px; }
+  .acts { flex-wrap: wrap; }
+}
