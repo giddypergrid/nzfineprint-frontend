@@ -1,5 +1,6 @@
 import type { SearchMode } from "../lib/ui";
 import SearchDeck from "./SearchDeck";
+import TryRow from "./TryRow";
 import YearChart from "./YearChart";
 
 interface HomeViewProps {
@@ -11,10 +12,11 @@ interface HomeViewProps {
   onQueryChange: (value: string) => void;
   onRemoveTag: (index: number) => void;
   onSubmit: () => void;
+  onRunExample: (query: string) => void;
 }
 
-/** The front page: the search deck over the leader (hero + year chart). */
-export default function HomeView(props: HomeViewProps) {
+/** The front page: the search deck, the leader (hero + year chart), then runnable examples. */
+export default function HomeView({ onRunExample, ...props }: HomeViewProps) {
   return (
     <section>
       <SearchDeck {...props} />
@@ -35,6 +37,8 @@ export default function HomeView(props: HomeViewProps) {
           <YearChart />
         </div>
       </div>
+
+      <TryRow onRun={onRunExample} />
     </section>
   );
 }

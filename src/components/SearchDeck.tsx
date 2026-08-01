@@ -1,46 +1,8 @@
 import type { FormEvent } from "react";
+import { ASK_EXAMPLES, SEARCH_EXAMPLES } from "../data/examples";
 import { useTypewriter } from "../hooks/useTypewriter";
 import type { SearchMode } from "../lib/ui";
 
-// Examples teach the product, so these lead with ordinary trading names — the shape someone
-// checking a supplier or their own company would type — not famous collapses.
-//
-// Every name here was re-verified against the live DB (2026-08-01) AFTER search moved to
-// phraseto_tsquery. That change matters: a query of 4 words or fewer takes the keyword route and
-// now needs the words ADJACENT, so the previous term+place/term+year examples ("liquidation
-// Auckland 2024", "CBL Insurance liquidation", "wine company liquidation") returned nothing at all.
-// Anything short added here must be a real contiguous name and must be re-checked.
-const SEARCH_EXAMPLES = [
-  "Resolve Electrical",
-  "Beachlands Cafe",
-  "Central Plumbing Services",
-  "Lyford Transport",
-  "Concept Builders Queenstown",
-  "Energize Electrical",
-  "Pacey Log Transport",
-  "Du Val Group",
-  "Smiths City",
-  "Sacred Hill",
-  "builders that went into liquidation in Christchurch",
-  "a cafe put into liquidation this year",
-  "companies wound up by Inland Revenue",
-  "trucking firms placed in receivership",
-  "companies struck off for not filing returns",
-  "land taken by the council for a road",
-];
-const ASK_EXAMPLES = [
-  "Is it safe to do business with Resolve Electrical?",
-  "Has anything been filed against Beachlands Cafe?",
-  "My builder is Concept Builders Queenstown — should I be worried?",
-  "A supplier of mine just had receivers appointed — how worried should I be?",
-  "Is Sacred Hill still trading?",
-  "Which construction companies in Christchurch went under recently?",
-  "Are there directors who show up across lots of failed companies?",
-  "Which banks appoint the most receivers?",
-  "Any liquidations in the wine industry lately?",
-  "Who is behind the Du Val collapse?",
-  "What happened to Smiths City?",
-];
 const TAG_HINT = "Add context — or just press Search to research the tag";
 
 interface SearchDeckProps {
