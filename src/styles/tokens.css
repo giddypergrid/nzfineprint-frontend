@@ -22,8 +22,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.58;
   font-feature-settings: var(--osf);
   -webkit-font-smoothing: antialiased;
 }
