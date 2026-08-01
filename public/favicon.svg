@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fine Print">
+  <title>Fine Print</title>
+  <!-- The masthead in miniature: logotype band, claret rule, then columns trailing off — the same
+       structure as the page header, so it reads at 16px without any lettering to blur. -->
+  <rect width="64" height="64" fill="#221d18"/>
+  <rect x="12" y="13" width="40" height="9" fill="#fcf5ee"/>
+  <rect x="12" y="26" width="40" height="3" fill="#8a2a40"/>
+  <rect x="12" y="34" width="40" height="5" fill="#fcf5ee" opacity=".9"/>
+  <rect x="12" y="43" width="40" height="5" fill="#fcf5ee" opacity=".68"/>
+  <rect x="12" y="52" width="23" height="5" fill="#fcf5ee" opacity=".46"/>
+</svg>

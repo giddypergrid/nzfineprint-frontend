@@ -1,7 +1,7 @@
 // Shared UI vocabulary used across components.
 
 /** Which page is showing. */
-export type ViewName = "home" | "results" | "detail" | "agent";
+export type ViewName = "home" | "results" | "detail" | "agent" | "legal";
 
 /** The two search modes on the home deck. */
 export type SearchMode = "search" | "ask";
@@ -11,4 +11,5 @@ export const MASTHEAD_BACK: Record<Exclude<ViewName, "home">, { label: string; t
   results: { label: "＋ New search", to: "home" },
   detail: { label: "← Back to results", to: "results" },
   agent: { label: "＋ New question", to: "home" },
+  legal: { label: "← Back", to: "home" },
 };

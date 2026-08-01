@@ -6,6 +6,7 @@ import AskView from "./components/AskView";
 import Colophon from "./components/Colophon";
 import DetailView from "./components/DetailView";
 import HomeView from "./components/HomeView";
+import LegalView from "./components/LegalView";
 import Masthead from "./components/Masthead";
 import ResultsView from "./components/ResultsView";
 import type { SearchMode, ViewName } from "./lib/ui";
@@ -142,53 +143,58 @@ export default function App() {
     <div className="wrap">
       <Masthead view={view} stats={stats} onGoHome={() => goTo("home")} onGoTo={goTo} />
 
-      {view === "home" && (
-        <HomeView
-          mode={mode}
-          query={query}
-          contextTags={contextTags}
-          submitting={searchLoading || askLoading}
-          onSetMode={changeMode}
-          onQueryChange={setQuery}
-          onRemoveTag={removeTag}
-          onSubmit={submit}
-        />
-      )}
+      {/* grows to fill the viewport so the colophon sits at the bottom on short pages */}
+      <main className="main">
+        {view === "home" && (
+          <HomeView
+            mode={mode}
+            query={query}
+            contextTags={contextTags}
+            submitting={searchLoading || askLoading}
+            onSetMode={changeMode}
+            onQueryChange={setQuery}
+            onRemoveTag={removeTag}
+            onSubmit={submit}
+          />
+        )}
 
-      {view === "results" && (
-        <ResultsView
-          results={results}
-          count={resultCount}
-          loading={searchLoading}
-          error={searchError}
-          searchedQuery={searchedQuery}
-          stats={stats}
-          onOpenNotice={openNotice}
-          category={category}
-          sinceYear={sinceYear}
-          minSignificance={minSignificance}
-          onCategoryChange={changeCategory}
-          onSinceYearChange={setSinceYear}
-          onMinSignificanceChange={setMinSignificance}
-          onCommitFilters={commitFilters}
-          onClearFilters={clearFilters}
-        />
-      )}
+        {view === "results" && (
+          <ResultsView
+            results={results}
+            count={resultCount}
+            loading={searchLoading}
+            error={searchError}
+            searchedQuery={searchedQuery}
+            stats={stats}
+            onOpenNotice={openNotice}
+            category={category}
+            sinceYear={sinceYear}
+            minSignificance={minSignificance}
+            onCategoryChange={changeCategory}
+            onSinceYearChange={setSinceYear}
+            onMinSignificanceChange={setMinSignificance}
+            onCommitFilters={commitFilters}
+            onClearFilters={clearFilters}
+          />
+        )}
 
-      {view === "detail" && selected && <DetailView notice={selected} onResearch={researchEntity} />}
+        {view === "detail" && selected && <DetailView notice={selected} onResearch={researchEntity} />}
 
-      {view === "agent" && (
-        <AskView
-          loading={askLoading}
-          steps={askSteps}
-          answer={askAnswer}
-          sources={askSources}
-          error={askError}
-          onOpenNotice={openNotice}
-        />
-      )}
+        {view === "agent" && (
+          <AskView
+            loading={askLoading}
+            steps={askSteps}
+            answer={askAnswer}
+            sources={askSources}
+            error={askError}
+            onOpenNotice={openNotice}
+          />
+        )}
 
-      <Colophon />
+        {view === "legal" && <LegalView />}
+      </main>
+
+      <Colophon onOpenLegal={() => goTo("legal")} />
     </div>
   );
 }

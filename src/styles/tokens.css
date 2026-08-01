@@ -27,6 +27,8 @@ body {
   font-feature-settings: var(--osf);
   -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 1440px; margin: 0 auto; padding: 0 40px 90px; }
+/* Column flex so <main> can absorb the slack and hold the colophon at the bottom of short pages. */
+.wrap { max-width: 1600px; min-height: 100vh; margin: 0 auto; padding: 0 40px 28px; display: flex; flex-direction: column; }
+.main { flex: 1; }
 a { color: inherit; }
 .mono { font-family: var(--mono); font-feature-settings: "tnum" 1; }
