@@ -1,112 +1,66 @@
-# Frontend work — next up
+# Frontend work — state and what's left
 
-Written 2026-08-01, straight after the backend search fix. Read `DECISIONS.md` and `HANDOFF.md` §0
-for the product core first. Visual direction is locked (print-newspaper, C1 "financial intelligence")
-— do not redesign, only fix what's listed here.
-
----
-
-## 1. The empty state — do this first
-
-**Why it moved to the top.** The backend now uses `phraseto_tsquery`, so words must be adjacent to
-match. Searching a company that genuinely isn't in the record returns `count: 0` instead of borrowing
-words from unrelated companies in a bulk-removal notice. That is correct, and it means **zero results
-just became a common, normal answer** — six of the twelve cases in `app/tests/search_probe.py` return
-zero on purpose.
-
-Right now `ResultsView.tsx` renders that as one line of 13px grey mono:
-
-```
-No notices matched. Try different words or widen the filters.
-```
-
-That reads as a broken search. For this product, zero results IS the answer — it means you're clean —
-and it's the single moment the whole "credit-check for the public record" idea has to land. It should
-be the most confident screen on the site, not the failure screen.
-
-**Where:** `src/components/ResultsView.tsx`, the `results.length === 0` branch in `ResultsBody`.
-Needs the query string passed down (App.tsx currently doesn't pass it to ResultsView).
-
-**Copy — use as written. No taglines, no reassurance padding:**
-
-```
-Nothing on the record
-
-No notice in the New Zealand Gazette mentions "Sunrise Cafe Limited".
-
-Searched 205,501 notices, 2000 to today.
-
-Fine Print covers liquidations, receiverships, company removals, bankruptcies,
-land and legal notices. Company registration details and director records are
-held by the Companies Office. Land titles are held by LINZ.
-```
-
-Three jobs, in order: state the result plainly, state the scope so the "nothing" is believable, and
-be honest about what the Gazette does not hold. The last paragraph is what makes it trustworthy
-rather than just empty — per the north star, never shrug at gaps, point at the right source instead.
-
-**The count must be real.** `205,501` is correct as of 2026-08-01 but the `updater` will change it.
-Either add a small `GET /stats` to the API returning `{notice_count, oldest, newest}` (~10 lines,
-cache it) and fetch once on load, or thread it through the search response. Do not hardcode a number
-that will silently drift — a wrong count in the sentence that exists to establish trust is worse than
-no count.
-
-Style it as a real block: heading in the serif face, the searched name quoted, scope line in the
-muted ink, the outward pointers as ordinary body text. No card, no border-radius, no icon.
+Written 2026-08-01 after the product audit, updated the same day once the first three items shipped.
+Visual direction is locked (print-newspaper, C1 "financial intelligence") — do not redesign.
 
 ---
 
-## 2. Home page copy — two AI tells
+## Done
 
-**`HomeView.tsx`, the hero paragraph.** Currently:
+**Empty state.** `NoResults.tsx` replaces the one line of grey mono. Search requires adjacent words,
+so a company that genuinely isn't in the record returns nothing — for someone looking up their own
+name that IS the finding, so the screen states it, quotes what it was measured against, and says
+what the Gazette does not hold (Companies Office, LINZ). A separate branch handles filters being on,
+because then the record didn't come back empty, the filtered slice did.
 
-> We collect every notice in the New Zealand Gazette from 2000 to today and make it simple to search
-> — liquidations, receiverships, removals, land and legal notices. Check a company before you deal
-> with it, look up your own, or ask the desk a question and get a straight answer back.
+**Real corpus numbers.** `GET /stats` on the API returns `{notice_count, oldest, newest}`, cached an
+hour. The empty state and the masthead both read from it. The masthead used to claim `2000 —
+Current`; it now shows the newest notice actually loaded, because the updater can be days behind.
 
-The second sentence is a tricolon of benefits — three parallel clauses selling three use cases in one
-breath. That cadence is the giveaway. Cut it to what the site actually does, and lead with self-lookup
-because that's the core, not company-checking.
+**Copy.** Hero tricolon cut, leads with self-lookup. Tab `Ask the desk` → `Ask a question`. Search
+hint states the real constraint instead of a dead example.
 
-**`SearchDeck.tsx`, "Ask the desk".** The label and its note ("The desk runs several inquiries and
-files a full report") put theme ahead of clarity on the more impressive of the two features. A
-first-time visitor can't tell what "the desk" is or how it differs from Search. Keep the newspaper
-voice, but the label has to say what it does.
-
----
-
-## 3. The examples teach the wrong product
-
-`SearchDeck.tsx` holds ~40 example queries and they are almost all famous corporate collapses — Du
-Val, Mainzeal, Blue Chip, Smiths City, CBL. Examples teach the product, and these teach "browse
-interesting NZ business failures", a curiosity tool. The north star is self-lookup.
-
-Worse, that's also the query shape that has always worked, while the self-lookup shape was the broken
-one. The site was quietly optimised for the demo.
-
-Rewrite around ordinary names and ordinary situations — the kind of thing a supplier, landlord or
-tradie would actually type. Keep a couple of famous ones for recognition, not twenty.
-
-Every example must be verified against the live API before shipping (the current list was, on
-2026-07-24 — keep that standard). `python app/tests/search_probe.py https://api.nzfineprint.com`
-shows the pattern.
+**Examples.** Rewritten around ordinary trading names, all re-verified against the live DB.
 
 ---
 
-## 4. Strategic, not now — there is no reason to come back
+## The one trap to know before editing `SearchDeck.tsx`
 
-Views are home → results → detail → agent. No watchlist, no saved search, no alerts, no "quietly
-filed this week" feed. As shipped this is a **lookup**: used once, answered, closed. The north star
-describes a **radar** — an early-warning watch on your interests.
+Queries of four words or fewer take the keyword route, which uses `phraseto_tsquery` — the words must
+be **adjacent**. When search moved to phrase matching, three shipped examples silently went to zero
+hits, including the one hardcoded in the hint under the search box:
 
-Nothing on this list makes it bookmarkable. That needs subscriptions + a scheduler + email, which is
-backend work, and it's the real gap between what's built and what was designed. Decide it
+```
+liquidation Auckland 2024   0     <- was the hint text
+CBL Insurance liquidation   0
+wine company liquidation    0
+```
+
+Term+place and term+year are dead shapes. Any short example must be a real contiguous name, verified
+before it ships. Cheapest check is SQL, not the API (no rate limit):
+
+```sql
+SELECT count(*) FROM notices WHERE search_vector @@ phraseto_tsquery('simple', 'Your Example');
+```
+
+Anything over four words goes to the LLM/semantic route and always returns something.
+
+---
+
+## Left to do
+
+**1. There is still no reason to come back.** Views are home → results → detail → agent. No watchlist,
+no saved search, no alerts, no "quietly filed this week" feed. As shipped this is a **lookup** — used
+once, answered, closed — while the north star describes a **radar**, an early-warning watch on your
+interests. Nothing on the frontend fixes this: it needs subscriptions, a scheduler and email, which
+is backend work. It is the real gap between what's built and what was designed. Decide it
 deliberately, don't drift into it.
 
----
+**2. Not deployed anywhere.** Hosting is undecided — Caddy on the existing box (the box is memory-
+tight, but static files cost nothing) or Cloudflare Pages / Vercel. Before any production build,
+`web/.env` needs `VITE_API_BASE=https://api.nzfineprint.com`. CORS already allows
+`https://nzfineprint.com` and `https://www.nzfineprint.com` via `CORS_ORIGINS` on the server.
 
-## Before any production build
-
-`web/.env` needs `VITE_API_BASE=https://api.nzfineprint.com`. The API is live and CORS already allows
-`https://nzfineprint.com` and `https://www.nzfineprint.com` (set via `CORS_ORIGINS` on the server).
-The frontend is not deployed anywhere yet and is deliberately not in the backend repo.
+**3. `src/data/yearly.ts` is still hardcoded** (per-year counts + `TOTAL_NOTICES`). The year chart
+will drift once the updater runs. `/stats` already exists; the same treatment would fix it, or extend
+`/stats` to return the per-year series.
