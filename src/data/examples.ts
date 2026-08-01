@@ -7,7 +7,7 @@
 //   SELECT count(*) FROM notices WHERE search_vector @@ phraseto_tsquery('simple', 'Your Example');
 
 /** Ordinary trading names — the shape someone checking a supplier or their own company types. */
-export const NAME_EXAMPLES = [
+const NAME_EXAMPLES = [
   "Resolve Electrical",
   "Beachlands Cafe",
   "Central Plumbing Services",
@@ -21,7 +21,7 @@ export const NAME_EXAMPLES = [
 ];
 
 /** Over four words, so these take the LLM/semantic route and always return something. */
-export const SENTENCE_EXAMPLES = [
+const SENTENCE_EXAMPLES = [
   "builders that went into liquidation in Christchurch",
   "a cafe put into liquidation this year",
   "companies wound up by Inland Revenue",

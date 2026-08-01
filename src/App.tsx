@@ -124,12 +124,6 @@ export default function App() {
     else runAsk();
   };
 
-  // Front-page examples run immediately — passing the text straight through, because setQuery
-  // wouldn't have landed by the time submit() read it.
-  const runExample = (example: string) => {
-    setQuery(example);
-    executeSearch(example, buildFilters(category, sinceYear, minSignificance));
-  };
 
   // Category commits immediately; sliders update live and re-search on release.
   const changeCategory = (value: string | null) => {
@@ -162,7 +156,6 @@ export default function App() {
             onQueryChange={setQuery}
             onRemoveTag={removeTag}
             onSubmit={submit}
-            onRunExample={runExample}
           />
         )}
 
