@@ -22,14 +22,14 @@ interface MastheadProps {
   view: ViewName;
   stats: CorpusStats | null;
   onGoHome: () => void;
-  onGoTo: (view: ViewName) => void;
+  onGoBack: () => void;
 }
 
 /**
  * The paper's masthead. The "Fine Print" logotype is always the home link. On sub-views a
  * back / new control sits on the masthead line (right); the home page shows the record's span.
  */
-export default function Masthead({ view, stats, onGoHome, onGoTo }: MastheadProps) {
+export default function Masthead({ view, stats, onGoHome, onGoBack }: MastheadProps) {
   const back = view === "home" ? null : MASTHEAD_BACK[view];
 
   return (
@@ -47,7 +47,7 @@ export default function Masthead({ view, stats, onGoHome, onGoTo }: MastheadProp
         </div>
 
         {back ? (
-          <button className="mast-back" onClick={() => onGoTo(back.to)}>
+          <button className="mast-back" onClick={back.action === "back" ? onGoBack : onGoHome}>
             {back.label}
           </button>
         ) : (

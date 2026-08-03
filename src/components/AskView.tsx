@@ -4,11 +4,13 @@ import type { Notice } from "../api/types";
 import { noticeTitle, splitLeadSentence } from "../lib/format";
 
 interface AskViewProps {
+  question: string;
   loading: boolean;
   steps: string[];
   answer: string | null;
   sources: Notice[];
   error: string | null;
+  onRun: () => void;
   onOpenNotice: (notice: Notice) => void;
 }
 
@@ -19,11 +21,24 @@ interface AskViewProps {
  * A run can make twenty-odd lookups, so the narration is windowed while it runs and folded away
  * once it's done — the working is worth watching live, but it isn't the deliverable.
  */
-export default function AskView({ loading, steps, answer, sources, error, onOpenNotice }: AskViewProps) {
+export default function AskView({
+  question,
+  loading,
+  steps,
+  answer,
+  sources,
+  error,
+  onRun,
+  onOpenNotice,
+}: AskViewProps) {
   const [stepsUnfolded, setStepsUnfolded] = useState(false);
 
   if (error) return <div className="state err">{error}</div>;
-  if (!loading && !answer && steps.length === 0) return null;
+  // Reached by a shared link or a reload: the question is known but nothing has been researched.
+  // The run is not started automatically — it is a real agent loop against the daily budget.
+  if (!loading && !answer && steps.length === 0) {
+    return <Unstarted question={question} onRun={onRun} />;
+  }
 
   return (
     <>
@@ -41,6 +56,18 @@ export default function AskView({ loading, steps, answer, sources, error, onOpen
 
       {answer && <Briefing answer={answer} sources={sources} onOpenNotice={onOpenNotice} />}
     </>
+  );
+}
+
+function Unstarted({ question, onRun }: { question: string; onRun: () => void }) {
+  return (
+    <div className="unstarted">
+      <span className="stamp">Question</span>
+      <h2>{question}</h2>
+      <button type="button" className="submit" onClick={onRun}>
+        Research this →
+      </button>
+    </div>
   );
 }
 

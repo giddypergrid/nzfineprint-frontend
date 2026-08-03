@@ -1,3 +1,4 @@
+import type { CorpusStats } from "../api/types";
 import type { SearchMode } from "../lib/ui";
 import SearchDeck from "./SearchDeck";
 import YearChart from "./YearChart";
@@ -7,6 +8,7 @@ interface HomeViewProps {
   query: string;
   contextTags: string[];
   submitting: boolean;
+  stats: CorpusStats | null;
   onSetMode: (mode: SearchMode) => void;
   onQueryChange: (value: string) => void;
   onRemoveTag: (index: number) => void;
@@ -14,10 +16,10 @@ interface HomeViewProps {
 }
 
 /** The front page: the search deck over the leader (hero + year chart). */
-export default function HomeView(props: HomeViewProps) {
+export default function HomeView({ stats, ...deck }: HomeViewProps) {
   return (
     <section className="home">
-      <SearchDeck {...props} />
+      <SearchDeck {...deck} />
 
       <div className="leader">
         <div>
@@ -32,7 +34,7 @@ export default function HomeView(props: HomeViewProps) {
         </div>
         <div className="aside">
           <h3>Notices recorded each year</h3>
-          <YearChart />
+          <YearChart total={stats?.notice_count ?? null} />
         </div>
       </div>
     </section>

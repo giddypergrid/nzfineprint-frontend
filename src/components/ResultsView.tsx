@@ -1,5 +1,6 @@
 import type { CorpusStats, Notice } from "../api/types";
 import { formatCategory, noticeTitle, significanceTier, summarySnippet } from "../lib/format";
+import { filtersActive } from "../lib/routing";
 import Filters from "./Filters";
 import NoResults from "./NoResults";
 
@@ -40,7 +41,7 @@ export default function ResultsView({
   onCommitFilters,
   onClearFilters,
 }: ResultsViewProps) {
-  const filtersActive = category !== null || sinceYear > 2000 || minSignificance > 0;
+  const anyFilterSet = filtersActive({ category, sinceYear, minSignificance });
 
   return (
     <section>
@@ -67,7 +68,7 @@ export default function ResultsView({
             error={error}
             searchedQuery={searchedQuery}
             stats={stats}
-            filtersActive={filtersActive}
+            filtersActive={anyFilterSet}
             onOpenNotice={onOpenNotice}
             onClearFilters={onClearFilters}
           />

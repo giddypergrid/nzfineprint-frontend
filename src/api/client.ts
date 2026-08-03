@@ -1,8 +1,9 @@
 // The one place that talks to the Fine Print API. Everything else calls these functions.
 import type { AskResponse, CorpusStats, Notice, SearchFilters, SearchResponse } from "./types";
 
-// Empty in dev (Vite proxies /search and /ask to the backend). Set VITE_API_BASE in production.
-const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+// Dev: "/api", which vite.config.ts proxies to the backend — the prefix keeps API calls clear of
+// the app's own /search and /ask routes. Production: VITE_API_BASE is the API host.
+const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 /** POST JSON and return the parsed body, throwing a readable error on a non-2xx. */
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -39,6 +40,13 @@ export async function fetchCorpusStats(): Promise<CorpusStats> {
   const response = await fetch(`${API_BASE}/stats`);
   if (!response.ok) throw new Error(await readErrorDetail(response));
   return response.json() as Promise<CorpusStats>;
+}
+
+/** One notice by id — what a shared or reloaded /notice/<id> page is rendered from. */
+export async function fetchNotice(noticeId: string): Promise<Notice> {
+  const response = await fetch(`${API_BASE}/notices/${encodeURIComponent(noticeId)}`);
+  if (!response.ok) throw new Error(await readErrorDetail(response));
+  return response.json() as Promise<Notice>;
 }
 
 /** Search notices. Keyword-shaped queries hit full-text; sentences go the semantic route. */

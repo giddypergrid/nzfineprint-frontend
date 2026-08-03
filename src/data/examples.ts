@@ -33,6 +33,20 @@ const SENTENCE_EXAMPLES = [
 /** What the placeholder cycles through: names first, so the name shape is what gets taught. */
 export const SEARCH_EXAMPLES = [...NAME_EXAMPLES, ...SENTENCE_EXAMPLES];
 
+/**
+ * A fresh order per call (Fisher-Yates on a copy — never sorts the exported array in place).
+ * Without this the placeholder opens on "Resolve Electrical" on every visit and every tab switch,
+ * so the site looks static and only ever teaches its first example.
+ */
+export function shuffled(examples: string[]): string[] {
+  const order = [...examples];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+
 export const ASK_EXAMPLES = [
   "Is it safe to do business with Resolve Electrical?",
   "Has anything been filed against Beachlands Cafe?",
