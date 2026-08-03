@@ -2,11 +2,8 @@ const CONTACT_EMAIL = "sunziyuan000@gmail.com";
 const REPO_FRONTEND = "https://github.com/giddypergrid/nzfineprint-frontend";
 const REPO_BACKEND = "https://github.com/giddypergrid/nzfineprint-backend";
 
-/**
- * Usage, copyright, disclaimer, contact. Leads with the two facts that matter most — the material
- * is already public, and the site is free and non-commercial — then the narrower legal points in
- * newspaper columns.
- */
+/** Leads with the two facts that matter — the material is already public, and the site is free and
+ *  non-commercial — then the narrower legal points in columns. */
 export default function LegalView() {
   return (
     <section className="legal">

@@ -1,8 +1,5 @@
-// URL <-> app state. Every view has a real address, so a page survives a reload, can be pasted to
-// someone else, and the browser Back button walks the history the reader actually made.
-//
-// Values coming back out of the URL are attacker-supplied (anyone can type in the address bar), so
-// every one is clamped to a legal value here rather than trusted downstream.
+// URL <-> app state, so every view survives a reload, a paste and the Back button.
+// Anything parsed out of a URL is attacker-supplied, so it is clamped here, never trusted onward.
 import { FIRST_YEAR } from "../data/yearly";
 import type { SearchFilters } from "../api/types";
 import type { ViewName } from "./ui";

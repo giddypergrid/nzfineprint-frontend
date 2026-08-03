@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-/**
- * Cycle a set of example queries as an animated placeholder (type out, pause, delete, next).
- * When `staticText` is given (e.g. context tags are present) it shows that instead and stops.
- * Pass a stable `examples` array per mode so switching modes resets the animation.
- */
+/** Animated placeholder: type out, pause, delete, next. `staticText` overrides and stops it.
+ *  Pass a stable `examples` array per mode, so switching modes resets the animation. */
 export function useTypewriter(examples: string[], staticText?: string): string {
   const [placeholder, setPlaceholder] = useState("");
   const cursor = useRef({ wordIndex: 0, charCount: 0, deleting: false });

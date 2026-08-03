@@ -51,9 +51,7 @@ export default function App() {
       .catch(() => setStats(null));   // the page omits the line rather than quote a number it can't stand behind
   }, []);
 
-  // Everything already fetched, keyed by the address that produced it. Going Back re-reads this
-  // instead of the network, so a previous page returns instantly — and an Ask never re-runs an
-  // agent that has already been paid for.
+  // Keyed by the address that produced it, so Back is instant and never re-runs a paid agent.
   const searchCache = useRef(new Map<string, SearchSnapshot>());
   const askCache = useRef(new Map<string, AskSnapshot>());
   const noticeCache = useRef(new Map<string, Notice>());
@@ -162,8 +160,7 @@ export default function App() {
     if (route.view !== "agent") return;
     setAskError(null);
     setAskLoading(false);
-    // Only ever restores. A run costs an agent loop and counts against the daily cap, so arriving
-    // cold (a shared link, a reload, a crawler) waits for the reader to press the button.
+    // Restore only — a cold arrival waits for the button, because a run costs an agent loop.
     setAsk(askCache.current.get(routeKey) ?? EMPTY_ASK);
   }, [routeKey]);
 
@@ -236,8 +233,7 @@ export default function App() {
     runAsk(question);
   };
 
-  // Filters refine the search that is on screen: the query comes from the address, never from
-  // whatever half-typed text is sitting in the box.
+  // The query comes from the address, never from half-typed text still sitting in the box.
   const searchWithFilters = (filters: ResultFilters) => {
     if (route.view !== "results") return;
     navigate({ view: "results", query: route.query, filters });

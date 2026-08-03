@@ -19,8 +19,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-/** FastAPI puts the message in `detail`; fall back to the status text. For a rate-limit/busy
- *  response (429/503) we append the exact wait from Retry-After when it's a short one. */
+/** FastAPI puts the message in `detail`. A short Retry-After is appended so a 429/503 says when. */
 async function readErrorDetail(response: Response): Promise<string> {
   let detail = `Request failed (${response.status} ${response.statusText})`;
   try {
@@ -34,8 +33,7 @@ async function readErrorDetail(response: Response): Promise<string> {
   return detail;
 }
 
-/** How many notices are loaded and how far they run. Fetched once on load; the zero-result page
- *  quotes it to show what "nothing found" was measured against. */
+/** Quoted by the zero-result page to show what "nothing found" was measured against. */
 export async function fetchCorpusStats(): Promise<CorpusStats> {
   const response = await fetch(`${API_BASE}/stats`);
   if (!response.ok) throw new Error(await readErrorDetail(response));
@@ -69,11 +67,8 @@ export interface AskStreamHandlers {
   onAnswer: (text: string) => void;
 }
 
-/**
- * Ask the desk and receive each stage line the moment the agent performs that lookup.
- * Uses fetch + a streamed body rather than EventSource, because EventSource cannot POST.
- * Resolves once the report has arrived; rejects if the server reports an error.
- */
+/** Each stage line arrives as the agent performs that lookup. fetch + a streamed body rather than
+ *  EventSource, which cannot POST. */
 export async function askTheDeskStreaming(query: string, handlers: AskStreamHandlers): Promise<void> {
   const response = await fetch(`${API_BASE}/ask/stream`, {
     method: "POST",

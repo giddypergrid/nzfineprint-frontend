@@ -15,11 +15,9 @@ interface AskViewProps {
 }
 
 /**
- * The "Ask the desk" page. Stage lines stream in one at a time as the agent performs each lookup;
- * the briefing appears once the report arrives.
- *
- * A run can make twenty-odd lookups, so the narration is windowed while it runs and folded away
- * once it's done — the working is worth watching live, but it isn't the deliverable.
+ * Stage lines stream in as the agent works, then the briefing lands. A run can make twenty-odd
+ * lookups, so the narration is windowed live and folded away after — worth watching, not the
+ * deliverable.
  */
 export default function AskView({
   question,
@@ -34,8 +32,7 @@ export default function AskView({
   const [stepsUnfolded, setStepsUnfolded] = useState(false);
 
   if (error) return <div className="state err">{error}</div>;
-  // Reached by a shared link or a reload: the question is known but nothing has been researched.
-  // The run is not started automatically — it is a real agent loop against the daily budget.
+  // Shared link or reload: never auto-run, a run costs an agent loop against the daily budget.
   if (!loading && !answer && steps.length === 0) {
     return <Unstarted question={question} onRun={onRun} />;
   }
@@ -71,11 +68,8 @@ function Unstarted({ question, onRun }: { question: string; onRun: () => void })
   );
 }
 
-/**
- * The live window. Every step stays in the DOM, but the box is a fixed four lines tall: the newest
- * sits at the bottom and older ones ride up under a fade. Fixed height is the point — the briefing
- * below must not get shoved down the page each time a lookup lands.
- */
+/** Fixed four lines tall, newest at the bottom, older riding up under a fade. Fixed is the point:
+ *  the briefing below must not get shoved down each time a lookup lands. */
 function RollingSteps({ steps }: { steps: string[] }) {
   if (steps.length === 0) {
     return (

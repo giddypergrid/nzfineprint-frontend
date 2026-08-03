@@ -9,12 +9,9 @@ interface NoResultsProps {
 }
 
 /**
- * Zero results is the answer, not a failure. Since search requires the words to be adjacent, a
- * company that isn't here returns nothing — and for someone looking up their own name that IS the
- * finding. So this states the result, shows what it was measured against, and says what the
- * Gazette does not hold, rather than suggesting the user try harder.
- *
- * With filters on, the record is not what came back empty — the filtered slice is. Say so instead.
+ * Zero results is the answer, not a failure — for someone looking up their own name it IS the
+ * finding. So state it, show what it was measured against, and say what the Gazette doesn't hold.
+ * With filters on it's the filtered slice that came back empty, not the record; say that instead.
  */
 export default function NoResults({ query, stats, filtersActive, onClearFilters }: NoResultsProps) {
   if (filtersActive) {
