@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FIRST_YEAR, YEARLY_NOTICE_COUNTS } from "../data/yearly";
+import { FIRST_YEAR, LAST_FULL_YEAR, YEARLY_NOTICE_COUNTS } from "../data/yearly";
 
 // Chart geometry (viewBox units) — same as the prototype.
 const W = 360;
@@ -13,8 +13,11 @@ interface Point {
   value: number;
 }
 
-/** The year line-graph in the home aside. Hover a year to see its exact count. */
-export default function YearChart() {
+/** The year line-graph in the home aside. Hover a year to see its exact count.
+ *  `total` comes from /stats: the caption used to hardcode 205,246, which the nightly updater
+ *  quietly falsified every time it loaded a notice. Null while it is in flight — the caption drops
+ *  the clause rather than print a stale number. */
+export default function YearChart({ total }: { total: number | null }) {
   const [hover, setHover] = useState<Point | null>(null);
 
   const { points, polyline, areaPolygon, peak } = useMemo(() => buildChart(), []);
@@ -65,7 +68,10 @@ export default function YearChart() {
           </div>
         )}
       </div>
-      <div className="chartcap">205,246 notices in total · full years 2000 – 2025 · hover a year for the count</div>
+      <div className="chartcap">
+        {total !== null && `${total.toLocaleString()} notices in total · `}
+        full years {FIRST_YEAR} – {LAST_FULL_YEAR} · hover a year for the count
+      </div>
     </>
   );
 }

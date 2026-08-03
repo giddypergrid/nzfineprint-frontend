@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { askTheDeskStreaming, fetchCorpusStats, searchNotices } from "./api/client";
-import type { CorpusStats, Notice, SearchFilters } from "./api/types";
+import { askTheDeskStreaming, fetchCorpusStats, fetchNotice, searchNotices } from "./api/client";
+import type { CorpusStats, Notice } from "./api/types";
 import AskView from "./components/AskView";
 import Colophon from "./components/Colophon";
 import DetailView from "./components/DetailView";
@@ -9,149 +9,249 @@ import HomeView from "./components/HomeView";
 import LegalView from "./components/LegalView";
 import Masthead from "./components/Masthead";
 import ResultsView from "./components/ResultsView";
-import type { SearchMode, ViewName } from "./lib/ui";
+import {
+  HOME,
+  NO_FILTERS,
+  parseRoute,
+  routeToPath,
+  toApiFilters,
+  type ResultFilters,
+  type Route,
+} from "./lib/routing";
+import type { SearchMode } from "./lib/ui";
 
 const RESULT_LIMIT = 20;
 
+interface SearchSnapshot {
+  results: Notice[];
+  count: number;
+}
+
+interface AskSnapshot {
+  steps: string[];
+  sources: Notice[];
+  answer: string | null;
+}
+
+const EMPTY_SEARCH: SearchSnapshot = { results: [], count: 0 };
+const EMPTY_ASK: AskSnapshot = { steps: [], sources: [], answer: null };
+
 export default function App() {
-  const [view, setView] = useState<ViewName>("home");
+  const [route, setRoute] = useState<Route>(() => parseRoute(window.location));
+
+  // Home deck state — deliberately NOT in the URL. It is what the reader is composing, not a page.
   const [mode, setMode] = useState<SearchMode>("search");
   const [query, setQuery] = useState("");
   const [contextTags, setContextTags] = useState<string[]>([]);
 
-  // search state — searchedQuery is the text the results on screen belong to, which is not `query`
-  // once the box is edited; the zero-result page names it, so it has to be the one actually run.
-  const [results, setResults] = useState<Notice[]>([]);
-  const [resultCount, setResultCount] = useState(0);
-  const [searchedQuery, setSearchedQuery] = useState("");
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-
-  // Size of the record, quoted when a search finds nothing. Null until it arrives (or if it fails),
-  // and the page simply omits the line rather than printing a number it can't stand behind.
   const [stats, setStats] = useState<CorpusStats | null>(null);
   useEffect(() => {
     fetchCorpusStats()
       .then(setStats)
-      .catch(() => setStats(null));
+      .catch(() => setStats(null));   // the page omits the line rather than quote a number it can't stand behind
   }, []);
 
-  // filter state (results sidebar)
-  const [category, setCategory] = useState<string | null>(null);
-  const [sinceYear, setSinceYear] = useState(2000);
-  const [minSignificance, setMinSignificance] = useState(0);
+  // Keyed by the address that produced it, so Back is instant and never re-runs a paid agent.
+  const searchCache = useRef(new Map<string, SearchSnapshot>());
+  const askCache = useRef(new Map<string, AskSnapshot>());
+  const noticeCache = useRef(new Map<string, Notice>());
 
-  // detail + ask state — the ask pieces fill in as they stream, not all at once
-  const [selected, setSelected] = useState<Notice | null>(null);
-  const [askSteps, setAskSteps] = useState<string[]>([]);
-  const [askSources, setAskSources] = useState<Notice[]>([]);
-  const [askAnswer, setAskAnswer] = useState<string | null>(null);
+  const navigate = useCallback((next: Route, replace = false) => {
+    const path = routeToPath(next);
+    if (replace) window.history.replaceState(null, "", path);
+    else window.history.pushState(null, "", path);
+    setRoute(next);
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      setRoute(parseRoute(window.location));
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const goHome = useCallback(() => navigate(HOME), [navigate]);
+  const goBack = useCallback(() => window.history.back(), []);
+
+  const routeKey = routeToPath(route);
+
+  // --- results -------------------------------------------------------------------------------
+  const [search, setSearch] = useState<SearchSnapshot>(EMPTY_SEARCH);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [draftFilters, setDraftFilters] = useState<ResultFilters>(NO_FILTERS);
+
+  useEffect(() => {
+    if (route.view !== "results") return;
+    setDraftFilters(route.filters);
+    setSearchError(null);
+
+    const cached = searchCache.current.get(routeKey);
+    if (cached) {
+      setSearch(cached);
+      setSearchLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearchLoading(true);
+    searchNotices(route.query, toApiFilters(route.filters), RESULT_LIMIT)
+      .then((response) => {
+        if (cancelled) return;
+        const snapshot = { results: response.results, count: response.count };
+        searchCache.current.set(routeKey, snapshot);
+        response.results.forEach((notice) => noticeCache.current.set(notice.id, notice));
+        setSearch(snapshot);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setSearch(EMPTY_SEARCH);
+        setSearchError(messageOf(error));
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [routeKey]);   // routeKey encodes the query and every filter, so it is the whole input
+
+  // --- one notice ----------------------------------------------------------------------------
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [noticeError, setNoticeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (route.view !== "detail") return;
+    setNoticeError(null);
+
+    const cached = noticeCache.current.get(route.noticeId);
+    if (cached) {
+      setNotice(cached);
+      return;
+    }
+
+    let cancelled = false;
+    setNotice(null);   // arrived by link or reload — fetch it before the article can render
+    fetchNotice(route.noticeId)
+      .then((fetched) => {
+        if (cancelled) return;
+        noticeCache.current.set(fetched.id, fetched);
+        setNotice(fetched);
+      })
+      .catch((error) => {
+        if (!cancelled) setNoticeError(messageOf(error));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [routeKey]);
+
+  // --- ask -----------------------------------------------------------------------------------
+  const [ask, setAsk] = useState<AskSnapshot>(EMPTY_ASK);
   const [askLoading, setAskLoading] = useState(false);
   const [askError, setAskError] = useState<string | null>(null);
 
-  const goTo = (next: ViewName) => {
-    setView(next);
-    window.scrollTo(0, 0);
-  };
+  useEffect(() => {
+    if (route.view !== "agent") return;
+    setAskError(null);
+    setAskLoading(false);
+    // Restore only — a cold arrival waits for the button, because a run costs an agent loop.
+    setAsk(askCache.current.get(routeKey) ?? EMPTY_ASK);
+  }, [routeKey]);
 
+  const runAsk = useCallback(
+    async (question: string) => {
+      const snapshot: AskSnapshot = { steps: [], sources: [], answer: null };
+      const seenSourceIds = new Set<string>();
+      setAsk(snapshot);
+      setAskError(null);
+      setAskLoading(true);
+      try {
+        await askTheDeskStreaming(question, {
+          onStep: (text) => {
+            snapshot.steps = [...snapshot.steps, text];
+            setAsk({ ...snapshot });
+          },
+          onSource: (source) => {
+            if (seenSourceIds.has(source.id)) return;
+            seenSourceIds.add(source.id);
+            noticeCache.current.set(source.id, source);
+            snapshot.sources = [...snapshot.sources, source];
+            setAsk({ ...snapshot });
+          },
+          onAnswer: (text) => {
+            snapshot.answer = text;
+            setAsk({ ...snapshot });
+          },
+        });
+        askCache.current.set(routeToPath({ view: "agent", question }), snapshot);
+      } catch (error) {
+        setAskError(messageOf(error));
+      } finally {
+        setAskLoading(false);
+      }
+    },
+    [],
+  );
+
+  // --- navigation from the UI ----------------------------------------------------------------
   const changeMode = (next: SearchMode) => {
     setMode(next);
     setQuery("");
-    if (next === "search") setContextTags([]); // tags are an Ask-mode context
+    if (next === "search") setContextTags([]);   // tags are an Ask-mode context
   };
 
   const removeTag = (index: number) => setContextTags((tags) => tags.filter((_, i) => i !== index));
 
-  // From a notice, jump to Ask with that entity as a context chip.
+  const openNotice = (opened: Notice) => {
+    noticeCache.current.set(opened.id, opened);
+    navigate({ view: "detail", noticeId: opened.id });
+  };
+
+  /** From a notice, jump to Ask with that entity as a context chip. */
   const researchEntity = (entityName: string) => {
     setMode("ask");
     setQuery("");
     setContextTags((tags) => (tags.includes(entityName) ? tags : [...tags, entityName]));
-    goTo("home");
+    navigate(HOME);
   };
-
-  const openNotice = (notice: Notice) => {
-    setSelected(notice);
-    goTo("detail");
-  };
-
-  async function executeSearch(rawQuery: string, filters: SearchFilters) {
-    const trimmed = rawQuery.trim();
-    if (!trimmed) return;
-
-    goTo("results");
-    setSearchedQuery(trimmed);
-    setSearchLoading(true);
-    setSearchError(null);
-    try {
-      const response = await searchNotices(trimmed, filters, RESULT_LIMIT);
-      setResults(response.results);
-      setResultCount(response.count);
-    } catch (error) {
-      setResults([]);
-      setResultCount(0);
-      setSearchError(messageOf(error));
-    } finally {
-      setSearchLoading(false);
-    }
-  }
-
-  async function runAsk() {
-    const askQuery = [...contextTags, query.trim()].filter(Boolean).join(" ").trim();
-    if (!askQuery) return;
-
-    goTo("agent");
-    setAskSteps([]);
-    setAskSources([]);
-    setAskAnswer(null);
-    setAskError(null);
-    setAskLoading(true);
-    try {
-      await askTheDeskStreaming(askQuery, {
-        onStep: (text) => setAskSteps((steps) => [...steps, text]),
-        onSource: (notice) => setAskSources((sources) => [...sources, notice]),
-        onAnswer: setAskAnswer,
-      });
-    } catch (error) {
-      setAskError(messageOf(error));
-    } finally {
-      setAskLoading(false);
-    }
-  }
 
   const submit = () => {
-    if (mode === "search") executeSearch(query, buildFilters(category, sinceYear, minSignificance));
-    else runAsk();
+    const typed = query.trim();
+    if (mode === "search") {
+      if (typed) navigate({ view: "results", query: typed, filters: NO_FILTERS });
+      return;
+    }
+    const question = [...contextTags, typed].filter(Boolean).join(" ").trim();
+    if (!question) return;
+    navigate({ view: "agent", question });
+    runAsk(question);
   };
 
-
-  // Category commits immediately; sliders update live and re-search on release.
-  const changeCategory = (value: string | null) => {
-    setCategory(value);
-    executeSearch(query, buildFilters(value, sinceYear, minSignificance));
-  };
-  const commitFilters = () => executeSearch(query, buildFilters(category, sinceYear, minSignificance));
-
-  // Offered when filters are what emptied the page — reset them and re-run over the whole record.
-  const clearFilters = () => {
-    setCategory(null);
-    setSinceYear(2000);
-    setMinSignificance(0);
-    executeSearch(searchedQuery, {});
+  // The query comes from the address, never from half-typed text still sitting in the box.
+  const searchWithFilters = (filters: ResultFilters) => {
+    if (route.view !== "results") return;
+    navigate({ view: "results", query: route.query, filters });
   };
 
   return (
     <div className="wrap">
-      <Masthead view={view} stats={stats} onGoHome={() => goTo("home")} onGoTo={goTo} />
+      <Masthead view={route.view} stats={stats} onGoHome={goHome} onGoBack={goBack} />
 
       {/* grows to fill the viewport so the colophon sits at the bottom on short pages */}
       <main className="main">
-        {view === "home" && (
+        {route.view === "home" && (
           <HomeView
             mode={mode}
             query={query}
             contextTags={contextTags}
             submitting={searchLoading || askLoading}
+            stats={stats}
             onSetMode={changeMode}
             onQueryChange={setQuery}
             onRemoveTag={removeTag}
@@ -159,54 +259,56 @@ export default function App() {
           />
         )}
 
-        {view === "results" && (
+        {route.view === "results" && (
           <ResultsView
-            results={results}
-            count={resultCount}
+            results={search.results}
+            count={search.count}
             loading={searchLoading}
             error={searchError}
-            searchedQuery={searchedQuery}
+            searchedQuery={route.query}
             stats={stats}
             onOpenNotice={openNotice}
-            category={category}
-            sinceYear={sinceYear}
-            minSignificance={minSignificance}
-            onCategoryChange={changeCategory}
-            onSinceYearChange={setSinceYear}
-            onMinSignificanceChange={setMinSignificance}
-            onCommitFilters={commitFilters}
-            onClearFilters={clearFilters}
+            category={draftFilters.category}
+            sinceYear={draftFilters.sinceYear}
+            minSignificance={draftFilters.minSignificance}
+            onCategoryChange={(category) => searchWithFilters({ ...draftFilters, category })}
+            onSinceYearChange={(sinceYear) => setDraftFilters((f) => ({ ...f, sinceYear }))}
+            onMinSignificanceChange={(minSignificance) =>
+              setDraftFilters((f) => ({ ...f, minSignificance }))
+            }
+            onCommitFilters={() => searchWithFilters(draftFilters)}
+            onClearFilters={() => searchWithFilters(NO_FILTERS)}
           />
         )}
 
-        {view === "detail" && selected && <DetailView notice={selected} onResearch={researchEntity} />}
+        {route.view === "detail" &&
+          (noticeError ? (
+            <div className="state err">{noticeError}</div>
+          ) : notice ? (
+            <DetailView notice={notice} onResearch={researchEntity} />
+          ) : (
+            <div className="state">Fetching the notice…</div>
+          ))}
 
-        {view === "agent" && (
+        {route.view === "agent" && (
           <AskView
+            question={route.question}
             loading={askLoading}
-            steps={askSteps}
-            answer={askAnswer}
-            sources={askSources}
+            steps={ask.steps}
+            answer={ask.answer}
+            sources={ask.sources}
             error={askError}
+            onRun={() => runAsk(route.question)}
             onOpenNotice={openNotice}
           />
         )}
 
-        {view === "legal" && <LegalView />}
+        {route.view === "legal" && <LegalView />}
       </main>
 
-      <Colophon onOpenLegal={() => goTo("legal")} />
+      <Colophon onOpenLegal={() => navigate({ view: "legal" })} />
     </div>
   );
-}
-
-/** Turn the sidebar filter state into the API's filter object (omit "no filter" values). */
-function buildFilters(category: string | null, sinceYear: number, minSignificance: number): SearchFilters {
-  const filters: SearchFilters = {};
-  if (category) filters.event_category = category;
-  if (sinceYear > 2000) filters.date_from = `${sinceYear}-01-01`;
-  if (minSignificance > 0) filters.min_significance = minSignificance;
-  return filters;
 }
 
 function messageOf(error: unknown): string {

@@ -10,10 +10,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Everything API-side sits under /api and the prefix is stripped on the way through. It has to
+    // be namespaced: /search and /ask are the app's own page routes now, so proxying those paths
+    // verbatim would hand the backend every attempt to open those pages.
     proxy: {
-      "/search": API_BACKEND,
-      "/ask": API_BACKEND,
-      "/stats": API_BACKEND,
+      "/api": {
+        target: API_BACKEND,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
   },
 });

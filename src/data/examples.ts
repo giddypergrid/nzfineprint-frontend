@@ -1,9 +1,6 @@
-// Shared by the search placeholder and the front-page try row, so there is one list to verify.
-//
-// Every NAME here was checked against the live DB (2026-08-01) AFTER search moved to
-// phraseto_tsquery. That matters: a query of four words or fewer takes the keyword route and needs
-// the words ADJACENT, so term+place and term+year shapes ("liquidation Auckland 2024") now return
-// nothing. Anything added here must be a real contiguous name, re-checked with:
+// Short queries take the keyword route, which needs the words ADJACENT — so term+place and
+// term+year shapes ("liquidation Auckland 2024") return nothing. Every name below is a real
+// contiguous one; verify any addition:
 //   SELECT count(*) FROM notices WHERE search_vector @@ phraseto_tsquery('simple', 'Your Example');
 
 /** Ordinary trading names — the shape someone checking a supplier or their own company types. */
@@ -32,6 +29,20 @@ const SENTENCE_EXAMPLES = [
 
 /** What the placeholder cycles through: names first, so the name shape is what gets taught. */
 export const SEARCH_EXAMPLES = [...NAME_EXAMPLES, ...SENTENCE_EXAMPLES];
+
+/**
+ * A fresh order per call (Fisher-Yates on a copy — never sorts the exported array in place).
+ * Without this the placeholder opens on "Resolve Electrical" on every visit and every tab switch,
+ * so the site looks static and only ever teaches its first example.
+ */
+export function shuffled(examples: string[]): string[] {
+  const order = [...examples];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
 
 export const ASK_EXAMPLES = [
   "Is it safe to do business with Resolve Electrical?",

@@ -54,11 +54,8 @@ export function toParagraphs(text: string): string[] {
     .filter(Boolean);
 }
 
-/**
- * Shape the agent's answer into the briefing layout: the opening sentence becomes the
- * headline, the rest becomes the body paragraphs. The agent is prompted to lead with its
- * conclusion, so the first sentence reads as a thesis.
- */
+/** Opening sentence becomes the headline, the rest the body. Works because the agent is prompted
+ *  to lead with its conclusion. */
 export function splitLeadSentence(answer: string): { headline: string; body: string[] } {
   const paragraphs = toParagraphs(answer);
   if (paragraphs.length === 0) return { headline: "", body: [] };

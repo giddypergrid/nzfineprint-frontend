@@ -1,5 +1,5 @@
-import type { FormEvent } from "react";
-import { ASK_EXAMPLES, SEARCH_EXAMPLES } from "../data/examples";
+import { useMemo, type FormEvent } from "react";
+import { ASK_EXAMPLES, SEARCH_EXAMPLES, shuffled } from "../data/examples";
 import { useTypewriter } from "../hooks/useTypewriter";
 import type { SearchMode } from "../lib/ui";
 
@@ -27,7 +27,11 @@ export default function SearchDeck({
   onRemoveTag,
   onSubmit,
 }: SearchDeckProps) {
-  const examples = mode === "search" ? SEARCH_EXAMPLES : ASK_EXAMPLES;
+  // Re-shuffled per mount and per tab switch, so a visit never opens on the same example twice.
+  const examples = useMemo(
+    () => shuffled(mode === "search" ? SEARCH_EXAMPLES : ASK_EXAMPLES),
+    [mode],
+  );
   const placeholder = useTypewriter(examples, contextTags.length ? TAG_HINT : undefined);
 
   const handleSubmit = (event: FormEvent) => {

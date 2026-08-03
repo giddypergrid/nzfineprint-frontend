@@ -7,4 +7,6 @@ export const YEARLY_NOTICE_COUNTS = [
 ];
 
 export const FIRST_YEAR = 2000;
-export const TOTAL_NOTICES = 205246;
+
+// The chart drops the trailing partial year, so this is the last one it actually plots.
+export const LAST_FULL_YEAR = FIRST_YEAR + YEARLY_NOTICE_COUNTS.length - 2;
