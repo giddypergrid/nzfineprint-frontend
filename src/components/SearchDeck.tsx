@@ -46,18 +46,18 @@ export default function SearchDeck({
           <button
             className="modetab"
             role="tab"
-            aria-selected={mode === "search"}
-            onClick={() => onSetMode("search")}
-          >
-            Search
-          </button>
-          <button
-            className="modetab"
-            role="tab"
             aria-selected={mode === "ask"}
             onClick={() => onSetMode("ask")}
           >
             Ask a question
+          </button>
+          <button
+            className="modetab"
+            role="tab"
+            aria-selected={mode === "search"}
+            onClick={() => onSetMode("search")}
+          >
+            Search
           </button>
         </div>
 

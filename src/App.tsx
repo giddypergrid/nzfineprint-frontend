@@ -40,7 +40,8 @@ export default function App() {
   const [route, setRoute] = useState<Route>(() => parseRoute(window.location));
 
   // Home deck state — deliberately NOT in the URL. It is what the reader is composing, not a page.
-  const [mode, setMode] = useState<SearchMode>("search");
+  // Ask leads: it answers the question people actually arrive with, and shows the research working.
+  const [mode, setMode] = useState<SearchMode>("ask");
   const [query, setQuery] = useState("");
   const [contextTags, setContextTags] = useState<string[]>([]);
 
