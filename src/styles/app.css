@@ -99,25 +99,29 @@ table.ledger td.date { font-family: var(--mono); font-size: 13.5px; color: var(-
 .acts a:hover { background: var(--paper-2); }
 .acts a.solid:hover { background: var(--claret-2); }
 
-/* ---- ask the desk: staged narration + briefing ---- */
-/* --step-line is one line's exact height (line-height + padding). The live window is a whole
-   multiple of it, so the briefing underneath never shifts as lookups stream in. */
-.steps { --step-line: 28px; font-family: var(--mono); font-size: 13px; color: var(--ink-2); border-left: 2px solid var(--claret); padding: 4px 0 4px 16px; margin: 18px 0; }
-.steps div { padding: 4px 0; line-height: 20px; animation: stepin .32s ease-out both; }
+/* ---- ask the desk: the call log + briefing ---- */
+/* Every lookup is printed in full — tool, arguments, what came back, how long. The point is that the
+   answer can be audited, so nothing here is summarised down to a count. */
+.calls { border-left: 2px solid var(--claret); padding: 0 0 0 16px; margin: 18px 0 0; }
+.call { padding: 10px 0; animation: stepin .32s ease-out both; }
+.call + .call { border-top: 1px solid var(--rule); }
 @keyframes stepin { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
-.steps .pending::after { content: " ▏"; animation: blink 1s step-start infinite; }
+.call-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+.call-head .tool { font-family: var(--mono); font-size: 13px; letter-spacing: .3px; color: var(--claret); }
+.call-head .ms { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); font-feature-settings: "tnum" 1; white-space: nowrap; }
+.call-args { font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--ink-3); margin-top: 4px; overflow-wrap: anywhere; }
+.call-out { font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink-2); margin-top: 4px; overflow-wrap: anywhere; }
+.call-say { font-family: var(--serif); font-style: italic; font-size: 15.5px; line-height: 1.5; color: var(--ink-2); margin-top: 6px; }
+.calls .waiting { font-family: var(--mono); font-size: 13px; color: var(--ink-2); padding: 10px 0; }
+.call.inflight .tool::after, .calls .waiting::after { content: " ▏"; animation: blink 1s step-start infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* Live: clipped to four lines, newest pinned to the bottom (flex-end pushes the overflow off the
-   top), and masked so departing lines dim rather than vanish at a hard edge. */
-.steps.rolling { height: calc(4 * var(--step-line)); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.14), rgba(0,0,0,.44) 36%, #000 74%); mask-image: linear-gradient(to bottom, rgba(0,0,0,.14), rgba(0,0,0,.44) 36%, #000 74%); }
-.steps.rolling div { flex: none; height: var(--step-line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Folded: the working reduced to one line, unfold control on the right. */
-.steps-fold { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-3); border-left: 2px solid var(--claret); padding: 7px 0 7px 16px; margin: 18px 0 0; }
-.steps-fold button { font: inherit; letter-spacing: inherit; text-transform: inherit; background: none; border: 1px solid var(--rule-2); color: var(--ink-2); padding: 5px 13px; cursor: pointer; }
-.steps-fold button:hover { border-color: var(--ink); color: var(--ink); }
-.steps-fold + .steps { margin-top: 10px; }
+/* Finished: the briefing leads and the working sits under it, open by default and collapsible. */
+.working { margin-top: 36px; border-top: 1px solid var(--ink); }
+.working-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 14px; }
+.working-head h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3); margin: 0; }
+.working-head button { font-family: var(--mono); font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; background: none; border: 1px solid var(--rule-2); color: var(--ink-2); padding: 7px 14px; cursor: pointer; }
+.working-head button:hover { border-color: var(--ink); color: var(--ink); }
 .unstarted { border-top: 3px double var(--ink); padding-top: 22px; }
 .unstarted .stamp { font-family: var(--mono); font-size: 11.5px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: var(--claret); padding: 4px 12px; }
 .unstarted h2 { font-size: 28px; font-weight: 800; line-height: 1.15; margin: 14px 0 20px; letter-spacing: -.4px; max-width: 30ch; text-wrap: balance; }
@@ -171,9 +175,53 @@ table.ledger td.date { font-family: var(--mono); font-size: 13.5px; color: var(-
 
 @media (max-width: 720px) {
   .leader, .grid { grid-template-columns: 1fr; gap: 28px; }
+  /* a grid item's floor is its min-content, so without this the filter chips hold the column open */
+  .leader > *, .grid > * { min-width: 0; }
   .brief .cols { columns: 1; }
   .legal-cols { columns: 1; column-rule: none; }
   .masthead { flex-wrap: wrap; }
   .masthead h1 { font-size: 44px; }
   .acts { flex-wrap: wrap; }
+
+  /* Pinned to the masthead the control lands on top of the logotype — put it back in the flow. */
+  .mast-back { position: static; transform: none; align-self: flex-start; padding: 12px 18px; }
+
+  /* The deck stacks: tabs, then the field, then a full-width submit. Laid out in a row it forced
+     the page to 624px on a 390px screen and pushed the submit button off the edge entirely. */
+  .deck { flex-direction: column; }
+  .deck .modes { border-bottom: 1px solid var(--rule-2); }
+  .modetab { flex: 1; padding: 15px 10px; border-right: none; }
+  .modetab + .modetab { border-left: 1px solid var(--rule-2); }
+  .deck form { flex-wrap: wrap; padding: 0 14px 14px; }
+  .deck .qfield { flex: 1 1 auto; }
+  .deck input { min-width: 0; font-size: 19px; padding: 13px 0; }
+  /* flex-basis, not width — a 100%-wide flex item still shares the row and gets squashed. */
+  .deck .submit { flex: 0 0 100%; align-self: auto; padding: 15px 0; }
+
+  /* The ledger unstacks into a headline block over one meta line. Left as a table its min-content
+     width was wider than the phone, which dragged the filters column out to 501px with it. */
+  table.ledger thead { display: none; }
+  table.ledger, table.ledger tbody, table.ledger td { display: block; }
+  /* The three meta cells go inline so they reflow as one wrapping line. Fixed columns collide at
+     320px, where "LEGISLATION" is a single unbreakable word wider than its share of the row. */
+  table.ledger tr.entry { display: block; padding: 15px 0; }
+  table.ledger td { padding: 0; }
+  table.ledger td.title { display: block; max-width: none; font-size: 18px; margin-bottom: 9px; }
+  table.ledger td.cat, table.ledger td.date, table.ledger td.sigcell { display: inline; }
+  table.ledger td.cat::after, table.ledger td.date::after { content: "·"; color: var(--ink-3); margin: 0 7px; }
+  .sigbar { width: 40px; }
+
+  /* 11px is below the readable floor on a phone, and these were 16-to-30px tap targets. */
+  .filters h4, .foots h4, .working-head h4, .chartcap, table.ledger td.title small { font-size: 12px; }
+  .masthead .strap { font-size: 12px; }
+  .colophon-link { padding: 14px 10px; }
+  .filters input[type=range] { height: 34px; }
+  .working-head button { padding: 11px 16px; }
+}
+
+/* Under ~360px the meta line no longer fits on one row, and the cells are adjacent in the markup so
+   there is no whitespace for it to break at. Drop the score onto its own line. */
+@media (max-width: 360px) {
+  table.ledger td.date::after { content: none; }
+  table.ledger td.sigcell { display: block; margin-top: 7px; }
 }
