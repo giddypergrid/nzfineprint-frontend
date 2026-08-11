@@ -15,9 +15,8 @@ interface AskViewProps {
 }
 
 /**
- * Stage lines stream in as the agent works, then the briefing lands. A run can make twenty-odd
- * lookups, so the narration is windowed live and folded away after — worth watching, not the
- * deliverable.
+ * Stage lines stream in as the agent works. They stay readable in full at every width — a phone used
+ * to clip each one to a single truncated line — and stay on the page after the briefing lands.
  */
 export default function AskView({
   question,
@@ -29,7 +28,7 @@ export default function AskView({
   onRun,
   onOpenNotice,
 }: AskViewProps) {
-  const [stepsUnfolded, setStepsUnfolded] = useState(false);
+  const [stepsOpen, setStepsOpen] = useState(true);
 
   if (error) return <div className="state err">{error}</div>;
   // Shared link or reload: never auto-run, a run costs an agent loop against the daily budget.
@@ -39,19 +38,23 @@ export default function AskView({
 
   return (
     <>
-      {loading ? (
-        <RollingSteps steps={steps} />
-      ) : (
-        steps.length > 0 && (
-          <FoldedSteps
-            steps={steps}
-            unfolded={stepsUnfolded}
-            onToggle={() => setStepsUnfolded((open) => !open)}
-          />
-        )
-      )}
+      {loading && <Steps steps={steps} live />}
 
       {answer && <Briefing answer={answer} sources={sources} onOpenNotice={onOpenNotice} />}
+
+      {!loading && steps.length > 0 && (
+        <section className="working">
+          <div className="working-head">
+            <h4>
+              How this was researched · {steps.length} {steps.length === 1 ? "lookup" : "lookups"}
+            </h4>
+            <button type="button" onClick={() => setStepsOpen((open) => !open)} aria-expanded={stepsOpen}>
+              {stepsOpen ? "Hide" : "Show"}
+            </button>
+          </div>
+          {stepsOpen && <Steps steps={steps} />}
+        </section>
+      )}
     </>
   );
 }
@@ -68,57 +71,24 @@ function Unstarted({ question, onRun }: { question: string; onRun: () => void })
   );
 }
 
-/** Fixed four lines tall, newest at the bottom, older riding up under a fade. Fixed is the point:
- *  the briefing below must not get shoved down each time a lookup lands. */
-function RollingSteps({ steps }: { steps: string[] }) {
+/** The agent's own account of each lookup, one line per step. `live` blinks a cursor on the newest. */
+function Steps({ steps, live = false }: { steps: string[]; live?: boolean }) {
   if (steps.length === 0) {
     return (
-      <div className="steps rolling">
-        <div className="pending">Consulting the record</div>
+      <div className="steps live">
+        <div className="step pending">Consulting the record</div>
       </div>
     );
   }
 
   return (
-    <div className="steps rolling">
+    <div className={live ? "steps live" : "steps"}>
       {steps.map((step, index) => (
-        <div key={index} className={index === steps.length - 1 ? "pending" : undefined}>
-          — {step}
+        <div key={index} className={live && index === steps.length - 1 ? "step pending" : "step"}>
+          {step}
         </div>
       ))}
     </div>
-  );
-}
-
-/** Once the report has landed, the working collapses to one line with an unfold control. */
-function FoldedSteps({
-  steps,
-  unfolded,
-  onToggle,
-}: {
-  steps: string[];
-  unfolded: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <>
-      <div className="steps-fold">
-        <span>
-          {steps.length} {steps.length === 1 ? "lookup" : "lookups"} made
-        </span>
-        <button type="button" onClick={onToggle} aria-expanded={unfolded}>
-          {unfolded ? "Fold" : "Unfold"}
-        </button>
-      </div>
-
-      {unfolded && (
-        <div className="steps">
-          {steps.map((step, index) => (
-            <div key={index}>— {step}</div>
-          ))}
-        </div>
-      )}
-    </>
   );
 }
 
