@@ -5,6 +5,8 @@ import { FIRST_YEAR, LAST_FULL_YEAR, YEARLY_NOTICE_COUNTS } from "../data/yearly
 const W = 360;
 const H = 180;
 const PAD = { left: 6, right: 6, top: 22, bottom: 24 };
+// The SVG scales to its column, so this is roughly its rendered px. 9 measured under 8px on a phone.
+const LABEL_SIZE = 11;
 
 interface Point {
   x: number;
@@ -31,16 +33,16 @@ export default function YearChart({ total }: { total: number | null }) {
           <polyline fill="none" stroke="#99003d" strokeWidth="1.8" points={polyline} />
 
           <circle cx={peak.x} cy={peak.y} r="3" fill="#99003d" />
-          <text x={peak.x} y={peak.y - 7} textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#99003d">
+          <text x={peak.x} y={peak.y - 8} textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize={LABEL_SIZE} fill="#99003d">
             peak {peak.value.toLocaleString()}
           </text>
 
           {hover && <circle cx={hover.x} cy={hover.y} r="4" fill="#99003d" />}
 
-          <text x={PAD.left} y={H - 8} fontFamily="ui-monospace,monospace" fontSize="9" fill="#8a7d6b">
+          <text x={PAD.left} y={H - 7} fontFamily="ui-monospace,monospace" fontSize={LABEL_SIZE} fill="#8a7d6b">
             {FIRST_YEAR}
           </text>
-          <text x={W - PAD.right} y={H - 8} textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="9" fill="#8a7d6b">
+          <text x={W - PAD.right} y={H - 7} textAnchor="end" fontFamily="ui-monospace,monospace" fontSize={LABEL_SIZE} fill="#8a7d6b">
             {FIRST_YEAR + points.length - 1}
           </text>
 
