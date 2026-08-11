@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { askTheDeskStreaming, fetchCorpusStats, fetchNotice, searchNotices } from "./api/client";
-import type { AgentStep, CorpusStats, Notice } from "./api/types";
+import type { CorpusStats, Notice } from "./api/types";
 import AskView from "./components/AskView";
 import Colophon from "./components/Colophon";
 import DetailView from "./components/DetailView";
@@ -9,7 +9,6 @@ import HomeView from "./components/HomeView";
 import LegalView from "./components/LegalView";
 import Masthead from "./components/Masthead";
 import ResultsView from "./components/ResultsView";
-import { mergeStepEvent } from "./lib/agentSteps";
 import {
   HOME,
   NO_FILTERS,
@@ -29,7 +28,7 @@ interface SearchSnapshot {
 }
 
 interface AskSnapshot {
-  steps: AgentStep[];
+  steps: string[];
   sources: Notice[];
   answer: string | null;
 }
@@ -175,8 +174,8 @@ export default function App() {
       setAskLoading(true);
       try {
         await askTheDeskStreaming(question, {
-          onStep: (event) => {
-            snapshot.steps = mergeStepEvent(snapshot.steps, event);
+          onStep: (text) => {
+            snapshot.steps = [...snapshot.steps, text];
             setAsk({ ...snapshot });
           },
           onSource: (source) => {

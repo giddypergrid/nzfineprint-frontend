@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import type { AgentStep, Notice } from "../api/types";
+import type { Notice } from "../api/types";
 import { noticeTitle, splitLeadSentence } from "../lib/format";
 
 interface AskViewProps {
   question: string;
   loading: boolean;
-  steps: AgentStep[];
+  steps: string[];
   answer: string | null;
   sources: Notice[];
   error: string | null;
@@ -15,8 +15,8 @@ interface AskViewProps {
 }
 
 /**
- * While the desk works, the call log leads and grows. Once the briefing lands it takes the top and
- * the log moves under it — the report first, then every lookup that produced it, in full.
+ * Stage lines stream in as the agent works. They stay readable in full at every width — a phone used
+ * to clip each one to a single truncated line — and stay on the page after the briefing lands.
  */
 export default function AskView({
   question,
@@ -28,7 +28,7 @@ export default function AskView({
   onRun,
   onOpenNotice,
 }: AskViewProps) {
-  const [workingOpen, setWorkingOpen] = useState(true);
+  const [stepsOpen, setStepsOpen] = useState(true);
 
   if (error) return <div className="state err">{error}</div>;
   // Shared link or reload: never auto-run, a run costs an agent loop against the daily budget.
@@ -38,7 +38,7 @@ export default function AskView({
 
   return (
     <>
-      {loading && <CallLog steps={steps} live />}
+      {loading && <Steps steps={steps} live />}
 
       {answer && <Briefing answer={answer} sources={sources} onOpenNotice={onOpenNotice} />}
 
@@ -48,11 +48,11 @@ export default function AskView({
             <h4>
               How this was researched · {steps.length} {steps.length === 1 ? "lookup" : "lookups"}
             </h4>
-            <button type="button" onClick={() => setWorkingOpen((open) => !open)} aria-expanded={workingOpen}>
-              {workingOpen ? "Hide" : "Show"}
+            <button type="button" onClick={() => setStepsOpen((open) => !open)} aria-expanded={stepsOpen}>
+              {stepsOpen ? "Hide" : "Show"}
             </button>
           </div>
-          {workingOpen && <CallLog steps={steps} />}
+          {stepsOpen && <Steps steps={steps} />}
         </section>
       )}
     </>
@@ -71,38 +71,23 @@ function Unstarted({ question, onRun }: { question: string; onRun: () => void })
   );
 }
 
-/** Every lookup the agent made: the tool, the arguments it passed, what came back, how long it
- *  took, and the model's own line about why. `live` marks the run still in progress. */
-function CallLog({ steps, live = false }: { steps: AgentStep[]; live?: boolean }) {
+/** The agent's own account of each lookup, one line per step. `live` blinks a cursor on the newest. */
+function Steps({ steps, live = false }: { steps: string[]; live?: boolean }) {
   if (steps.length === 0) {
     return (
-      <div className="calls live">
-        <div className="waiting">Consulting the record</div>
+      <div className="steps live">
+        <div className="step pending">Consulting the record</div>
       </div>
     );
   }
 
   return (
-    <div className={live ? "calls live" : "calls"}>
-      {steps.map((step) => (
-        <Call key={step.index} step={step} inFlight={live && step.summary === null} />
+    <div className={live ? "steps live" : "steps"}>
+      {steps.map((step, index) => (
+        <div key={index} className={live && index === steps.length - 1 ? "step pending" : "step"}>
+          {step}
+        </div>
       ))}
-    </div>
-  );
-}
-
-function Call({ step, inFlight }: { step: AgentStep; inFlight: boolean }) {
-  const args = JSON.stringify(step.args ?? {});
-
-  return (
-    <div className={inFlight ? "call inflight" : "call"}>
-      <div className="call-head">
-        <span className="tool">{step.tool}</span>
-        {step.ms !== null && <span className="ms">{step.ms} ms</span>}
-      </div>
-      {args !== "{}" && <div className="call-args">{args}</div>}
-      {step.summary && <div className="call-out">→ {step.summary}</div>}
-      {step.narration && <div className="call-say">{step.narration}</div>}
     </div>
   );
 }

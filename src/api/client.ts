@@ -1,12 +1,5 @@
 // The one place that talks to the Fine Print API. Everything else calls these functions.
-import type {
-  AgentStepEvent,
-  AskResponse,
-  CorpusStats,
-  Notice,
-  SearchFilters,
-  SearchResponse,
-} from "./types";
+import type { AskResponse, CorpusStats, Notice, SearchFilters, SearchResponse } from "./types";
 
 // Dev: "/api", which vite.config.ts proxies to the backend — the prefix keeps API calls clear of
 // the app's own /search and /ask routes. Production: VITE_API_BASE is the API host.
@@ -69,13 +62,13 @@ export function askTheDesk(query: string): Promise<AskResponse> {
 }
 
 export interface AskStreamHandlers {
-  onStep: (event: AgentStepEvent) => void;
+  onStep: (text: string) => void;
   onSource: (notice: Notice) => void;
   onAnswer: (text: string) => void;
 }
 
-/** Each lookup arrives twice — once as it is made, once when it returns. fetch + a streamed body
- *  rather than EventSource, which cannot POST. */
+/** Each stage line arrives as the agent performs that lookup. fetch + a streamed body rather than
+ *  EventSource, which cannot POST. */
 export async function askTheDeskStreaming(query: string, handlers: AskStreamHandlers): Promise<void> {
   const response = await fetch(`${API_BASE}/ask/stream`, {
     method: "POST",
@@ -107,7 +100,7 @@ function handleFrame(frame: string, handlers: AskStreamHandlers): void {
   if (!dataLine) return;
 
   const event = JSON.parse(dataLine.slice("data:".length).trim());
-  if (event.type === "step") handlers.onStep(event as AgentStepEvent);
+  if (event.type === "step") handlers.onStep(event.text);
   else if (event.type === "source") handlers.onSource(event.notice);
   else if (event.type === "answer") handlers.onAnswer(event.text);
   else if (event.type === "error") throw new Error(event.message);

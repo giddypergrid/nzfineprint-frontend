@@ -99,21 +99,16 @@ table.ledger td.date { font-family: var(--mono); font-size: 13.5px; color: var(-
 .acts a:hover { background: var(--paper-2); }
 .acts a.solid:hover { background: var(--claret-2); }
 
-/* ---- ask the desk: the call log + briefing ---- */
-/* Every lookup is printed in full — tool, arguments, what came back, how long. The point is that the
-   answer can be audited, so nothing here is summarised down to a count. */
-.calls { border-left: 2px solid var(--claret); padding: 0 0 0 16px; margin: 18px 0 0; }
-.call { padding: 10px 0; animation: stepin .32s ease-out both; }
-.call + .call { border-top: 1px solid var(--rule); }
+/* ---- ask the desk: stage lines + briefing ---- */
+/* Each line WRAPS and stays whole. It used to be one clipped nowrap row inside a fixed four-line
+   window, which on a phone left every stage line unreadable. */
+.steps { border-left: 2px solid var(--claret); padding: 2px 0 2px 16px; margin: 18px 0 0; }
+.step { font-family: var(--mono); font-size: 13px; line-height: 1.55; color: var(--ink-2);
+        padding: 7px 0; overflow-wrap: anywhere; animation: stepin .32s ease-out both; }
+.step + .step { border-top: 1px solid var(--rule); }
 @keyframes stepin { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
-.call-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
-.call-head .tool { font-family: var(--mono); font-size: 13px; letter-spacing: .3px; color: var(--claret); }
-.call-head .ms { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); font-feature-settings: "tnum" 1; white-space: nowrap; }
-.call-args { font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--ink-3); margin-top: 4px; overflow-wrap: anywhere; }
-.call-out { font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink-2); margin-top: 4px; overflow-wrap: anywhere; }
-.call-say { font-family: var(--serif); font-style: italic; font-size: 15.5px; line-height: 1.5; color: var(--ink-2); margin-top: 6px; }
-.calls .waiting { font-family: var(--mono); font-size: 13px; color: var(--ink-2); padding: 10px 0; }
-.call.inflight .tool::after, .calls .waiting::after { content: " ▏"; animation: blink 1s step-start infinite; }
+.step.pending { color: var(--ink); }
+.step.pending::after { content: " ▏"; animation: blink 1s step-start infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
 /* Finished: the briefing leads and the working sits under it, open by default and collapsible. */
