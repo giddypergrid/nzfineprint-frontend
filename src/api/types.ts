@@ -44,9 +44,31 @@ export interface CorpusStats {
   newest: string | null;
 }
 
-/** The desk's answer: the running stage lines, the report, and the notices it read. */
+/** One lookup the agent made, shown in full so the answer can be audited rather than trusted.
+ *  `summary` and `ms` are null until the tool returns. */
+export interface AgentStep {
+  index: number;
+  tool: string;
+  args: Record<string, unknown>;
+  narration: string | null;
+  summary: string | null;
+  ms: number | null;
+}
+
+/** One streamed step frame: "call" carries the request, "result" the outcome, matched by index. */
+export interface AgentStepEvent {
+  phase: "call" | "result";
+  index: number;
+  tool: string;
+  args?: Record<string, unknown>;
+  narration?: string | null;
+  summary?: string | null;
+  ms?: number | null;
+}
+
+/** The desk's answer: every lookup it made, the report, and the notices it read. */
 export interface AskResponse {
-  steps: string[];
+  steps: AgentStep[];
   answer: string;
   sources: Notice[];
 }
