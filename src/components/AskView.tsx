@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import type { AgentStep, Notice } from "../api/types";
+import type { Notice } from "../api/types";
 import { noticeTitle, splitLeadSentence } from "../lib/format";
 
 interface AskViewProps {
   question: string;
   loading: boolean;
-  steps: AgentStep[];
+  steps: string[];
   answer: string | null;
   sources: Notice[];
   error: string | null;
