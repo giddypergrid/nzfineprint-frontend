@@ -157,13 +157,7 @@ export default function App() {
   const [askLoading, setAskLoading] = useState(false);
   const [askError, setAskError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (route.view !== "agent") return;
-    setAskError(null);
-    setAskLoading(false);
-    // Restore only — a cold arrival waits for the button, because a run costs an agent loop.
-    setAsk(askCache.current.get(routeKey) ?? EMPTY_ASK);
-  }, [routeKey]);
+  const runningAskKey = useRef<string | null>(null);
 
   const runAsk = useCallback(
     async (question: string) => {
@@ -194,11 +188,30 @@ export default function App() {
       } catch (error) {
         setAskError(messageOf(error));
       } finally {
+        runningAskKey.current = null;
         setAskLoading(false);
       }
     },
     [],
   );
+
+  // A question is asked once and answered once: a cached answer is restored, anything else runs on
+  // arrival. The ref stops a second run of a question already streaming (remount, Back, StrictMode).
+  useEffect(() => {
+    if (route.view !== "agent") return;
+    setAskError(null);
+
+    const cached = askCache.current.get(routeKey);
+    if (cached) {
+      setAsk(cached);
+      setAskLoading(false);
+      return;
+    }
+
+    if (runningAskKey.current === routeKey) return;
+    runningAskKey.current = routeKey;
+    runAsk(route.question);
+  }, [routeKey]);
 
   // --- navigation from the UI ----------------------------------------------------------------
   const changeMode = (next: SearchMode) => {
@@ -230,8 +243,7 @@ export default function App() {
     }
     const question = [...contextTags, typed].filter(Boolean).join(" ").trim();
     if (!question) return;
-    navigate({ view: "agent", question });
-    runAsk(question);
+    navigate({ view: "agent", question });   // the agent route runs it on arrival
   };
 
   // The query comes from the address, never from half-typed text still sitting in the box.
@@ -299,7 +311,6 @@ export default function App() {
             answer={ask.answer}
             sources={ask.sources}
             error={askError}
-            onRun={() => runAsk(route.question)}
             onOpenNotice={openNotice}
           />
         )}

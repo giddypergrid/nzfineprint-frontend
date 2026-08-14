@@ -117,12 +117,13 @@ table.ledger td.date { font-family: var(--mono); font-size: 13.5px; color: var(-
 .working-head h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3); margin: 0; }
 .working-head button { font-family: var(--mono); font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; background: none; border: 1px solid var(--rule-2); color: var(--ink-2); padding: 7px 14px; cursor: pointer; }
 .working-head button:hover { border-color: var(--ink); color: var(--ink); }
-.unstarted { border-top: 3px double var(--ink); padding-top: 22px; }
-.unstarted .stamp { font-family: var(--mono); font-size: 11.5px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: var(--claret); padding: 4px 12px; }
-.unstarted h2 { font-size: 28px; font-weight: 800; line-height: 1.15; margin: 14px 0 20px; letter-spacing: -.4px; max-width: 30ch; text-wrap: balance; }
+.asking { border-top: 3px double var(--ink); padding-top: 22px; }
+.asking .stamp { font-family: var(--mono); font-size: 11.5px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: var(--claret); padding: 4px 12px; }
+.asking h2 { font-size: 28px; font-weight: 800; line-height: 1.15; margin: 14px 0 20px; letter-spacing: -.4px; text-wrap: balance; }
 .brief { border-top: 3px double var(--ink); padding-top: 22px; }
 .brief .stamp { font-family: var(--mono); font-size: 11.5px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: var(--claret); padding: 4px 12px; }
-.brief h2 { font-size: 32px; font-weight: 800; line-height: 1.12; margin: 14px 0; letter-spacing: -.5px; max-width: 24ch; text-wrap: balance; }
+/* Runs the full measure like a broadsheet deck — capped at a column it left half the page empty. */
+.brief h2 { font-size: 32px; font-weight: 800; line-height: 1.12; margin: 14px 0; letter-spacing: -.5px; text-wrap: balance; }
 .brief .cols { columns: 2; column-gap: 34px; column-rule: 1px solid var(--rule); }
 .brief p { font-size: 16.5px; line-height: 1.65; margin: 0 0 13px; break-inside: avoid; }
 .foots { margin-top: 22px; }

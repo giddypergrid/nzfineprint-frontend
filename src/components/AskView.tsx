@@ -10,7 +10,6 @@ interface AskViewProps {
   answer: string | null;
   sources: Notice[];
   error: string | null;
-  onRun: () => void;
   onOpenNotice: (notice: Notice) => void;
 }
 
@@ -25,24 +24,25 @@ export default function AskView({
   answer,
   sources,
   error,
-  onRun,
   onOpenNotice,
 }: AskViewProps) {
   const [stepsOpen, setStepsOpen] = useState(true);
 
   if (error) return <div className="state err">{error}</div>;
-  // Shared link or reload: never auto-run, a run costs an agent loop against the daily budget.
-  if (!loading && !answer && steps.length === 0) {
-    return <Unstarted question={question} onRun={onRun} />;
-  }
 
   return (
     <>
-      {loading && <Steps steps={steps} live />}
+      {!answer && (
+        <div className="asking">
+          <span className="stamp">Question</span>
+          <h2>{question}</h2>
+          <Steps steps={steps} live />
+        </div>
+      )}
 
       {answer && <Briefing answer={answer} sources={sources} onOpenNotice={onOpenNotice} />}
 
-      {!loading && steps.length > 0 && (
+      {answer && !loading && steps.length > 0 && (
         <section className="working">
           <div className="working-head">
             <h4>
@@ -56,18 +56,6 @@ export default function AskView({
         </section>
       )}
     </>
-  );
-}
-
-function Unstarted({ question, onRun }: { question: string; onRun: () => void }) {
-  return (
-    <div className="unstarted">
-      <span className="stamp">Question</span>
-      <h2>{question}</h2>
-      <button type="button" className="submit" onClick={onRun}>
-        Research this →
-      </button>
-    </div>
   );
 }
 
