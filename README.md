@@ -1,44 +1,70 @@
-# Fine Print — Web
+# Fine Print, web
 
-React + Vite + TypeScript frontend for NZ Gazette Fine Print. Talks to the FastAPI backend in
-`../app` — `POST /search` (keyword + semantic) and `POST /ask` (the research agent).
+**Live at [nzfineprint.com](https://www.nzfineprint.com)** · backend in
+[nzfineprint-backend](https://github.com/giddypergrid/nzfineprint-backend)
 
-## Run (dev)
+The React client for Fine Print, a search platform over 206,431 New Zealand Gazette notices. Two
+things happen here: a search box that returns notices, and an Ask view that streams a research
+agent's work step by step while it reads the record.
 
-Two processes, from the repo root.
+## The look is the argument
 
-1. **Backend** (needs Docker Desktop running):
-   ```
-   docker compose up -d db
-   app/.venv/Scripts/python -m uvicorn app.main:app --reload    # http://127.0.0.1:8000
-   ```
-2. **Frontend**:
-   ```
-   cd web
-   npm install        # first time only
-   npm run dev        # http://localhost:5173
-   ```
+The site is deliberately styled as a print newspaper: salmon paper, a masthead, a colophon, serif
+headlines. The content is company failure notices, and a newspaper is the format people already
+trust for that.
 
-Open http://localhost:5173. The Vite dev server proxies `/search` and `/ask` to the backend
-(`vite.config.ts`), so there is no CORS step in dev.
+Three other directions were built and thrown away first, a terminal look, a cartoon look, and a
+heavy-bordered search page. All three read as generic AI-generated product design. The rule that
+survived is restraint: one typeface family, one accent colour, no gradients, no shadows.
 
-## Build
+## Streaming the agent instead of spinning
+
+An agent question takes several rounds of tool calls and can run for twenty seconds. A spinner for
+twenty seconds reads as broken.
+
+So every tool the agent calls carries a `narration` argument, a short present-tense line the model
+writes itself, and the frontend renders those as they arrive:
 
 ```
-npm run build       # typecheck + production bundle into dist/
-npm run preview      # serve the built bundle
+  Looking for Sacred Hill in the record…
+  Reading the receivership notice in full…
+  Checking who else is named alongside them…
+  ▌
 ```
 
-## Layout
+The narration is a tool argument rather than message text on purpose. The model returns tool calls
+with empty content, so anything written as prose in the reply gets lost. As an argument it always
+arrives.
 
-- `src/api/` — `types.ts` (mirror the backend schemas) + `client.ts` (the only place that calls the API)
-- `src/components/` — one file per UI piece: `Masthead`, `SearchDeck`, `YearChart`, `HomeView`,
-  `ResultsView` / `Filters`, `DetailView`, `AskView`, `Colophon`
-- `src/lib/` — display helpers (`format.ts`), filter options (`facets.ts`), shared UI types (`ui.ts`)
-- `src/hooks/` — `useTypewriter` (the animated placeholder)
-- `src/styles/` — `tokens.css` (palette + type) and `app.css` (component styles)
+## Where to look
 
-## Production
+| File | Why |
+|---|---|
+| [`src/api/client.ts`](src/api/client.ts) | The only place that calls the API, including the streamed `/ask` reader |
+| [`src/components/AskView.tsx`](src/components/AskView.tsx) | Renders the agent's rolling narration and the final cited answer |
+| [`src/components/SearchDeck.tsx`](src/components/SearchDeck.tsx) | The search box. Read the note first: a backend change to phrase search silently zeroed the site's own example queries |
+| [`src/styles/tokens.css`](src/styles/tokens.css) | Palette and type scale, the whole design system |
 
-Set `VITE_API_BASE` to the API origin (see `.env.example`) and serve `dist/` behind the same
-domain, or add the origin to the CORS list in `app/main.py`.
+```
+src/api/          types mirroring the backend schemas, plus the client
+src/components/   one file per UI piece
+src/lib/          formatting, facet options, routing
+src/hooks/        useTypewriter, the animated placeholder
+```
+
+## Known gaps
+
+- **No watchlist.** You cannot be told when a new notice names something you care about, which is the
+  main reason anyone would come back.
+- **No Open Graph tags.** Links to the site preview as bare URLs.
+- Mobile was badly broken until August 2026, the home view rendered 624px wide inside a 390px
+  viewport. Fixed, but the backend and frontend branches have to deploy together.
+
+---
+
+React 19, TypeScript, Vite, plain CSS with custom properties. Deployed on Vercel, auto-deploys on
+push to `main`. DNS is Cloudflare, grey-cloud for the Vercel records and orange only for `api`.
+
+Development needs the backend running: `docker compose up -d db` and uvicorn from the backend repo,
+then `npm run dev` here. Vite proxies `/search` and `/ask` so there is no CORS step in development.
+In production, set `VITE_API_BASE` to the API origin.
