@@ -56,7 +56,6 @@ src/hooks/        useTypewriter, the animated placeholder
 
 - **No watchlist.** You cannot be told when a new notice names something you care about, which is the
   main reason anyone would come back.
-- **No Open Graph tags.** Links to the site preview as bare URLs.
 - Mobile was badly broken until August 2026, the home view rendered 624px wide inside a 390px
   viewport. Fixed, but the backend and frontend branches have to deploy together.
 
